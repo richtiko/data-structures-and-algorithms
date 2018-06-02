@@ -97,7 +97,7 @@ class RedBlackTree:
         left_black_height = self.check_ri(node.left)
         right_black_height = self.check_ri(node.right)
         if node.color == Color.Red and (node.left.color == Color.Red or node.right.color == Color.Red):
-            self.print_tree()
+            #self.print_tree()
             raise RuntimeError("red parent has red children")
         if node.left.color == Color.Black:
            left_black_height +=1
@@ -132,33 +132,96 @@ class RedBlackTree:
             node.parent.left = replacement
         else:
             node.parent.right = replacement
-        if replacement != self.nil:
-            replacement.parent = node.parent
+        #if replacement != self.nil:
+        replacement.parent = node.parent
 
-    def delete(self, key, root):
-        node = self.find(key, root)
-        if node == None:
+    def delete(self, key):
+        node = self.find(key, self.root)
+        if node == self.nil:
             return
-        
-        if node.right == None or node.left == None:
-            child = node.right
-            if node.right == None:
-                child = node.left
-            self.replace_node_for_parent(node, child)    
+        y = node
+        y_color = y.color
+        if y.right == self.nil or y.left == self.nil:
+            x = y.right
+            if y.right == self.nil:
+                x = y.left
+            self.replace_node_for_parent(y, x)
+            
         else:
-            pred = self.get_predsesor(node)
-            self.delete(pred.key, pred)
-            pred.left = node.left
-            if node.left != None:
-                node.left.parent = pred
-            pred.right = node.right
-            if node.right != None:
-                node.right.parent = pred
-            self.replace_node_for_parent(node, pred)
+            y = self.find_min(node.right)
+            y_color = y.color
+            x = y.right
+            x.parent = y # in case of x == nil we will nned to have parent of x pointing to y
+            
+            if y == node.right:
+                y.left = node.left
+                y.left.parent = y
+                self.replace_node_for_parent(node, y)
+            else:
+                self.replace_node_for_parent(y, x)
+                self.replace_node_for_parent(node, y)
+                y.right = node.right
+                y.right.parent = y
+                y.left = node.left
+                y.left.parent = y
+            y.color = node.color    
             
         del node
+        if y_color == Color.Black:
+            #self.print_tree();
+            self.RB_delete_fixup(x)
         self.check_ri(self.root)
-        
+
+    def RB_delete_fixup(self, x):
+        while x != self.root and x.color == Color.Black:
+            if x == x.parent.left:
+                w = x.parent.right
+                if w.color == Color.Red:
+                    x.parent.color = Color.Red
+                    w.color = Color.Black
+                    self.left_rotate(x.parent)
+                    w = x.parent.right
+                
+                if w.left.color == Color.Black and w.right.color == Color.Black:
+                    w.color = Color.Red
+                    x = x.parent
+                else:
+                    if w.right.color == Color.Black:
+                        w.left.color = Color.Black
+                        w.color = Color.Red
+                        self.right_rotate(w)
+                        w = x.parent.right
+                    w.color = w.parent.color
+                    w.parent.color = Color.Black
+                    w.right.color = Color.Black
+                    self.left_rotate(w.parent)
+                    x = self.root
+            else:
+                w = x.parent.left
+                if w.color == Color.Red:
+                    x.parent.color = Color.Red
+                    w.color = Color.Black
+                    self.right_rotate(x.parent)
+                    w = x.parent.left
+                
+                if w.left.color == Color.Black and w.right.color == Color.Black:
+                    w.color = Color.Red
+                    x = x.parent
+                else:
+                    if w.left.color == Color.Black:
+                        w.right.color = Color.Black
+                        w.color = Color.Red
+                        self.left_rotate(w)
+                        w = x.parent.left
+                    w.color = w.parent.color
+                    w.parent.color = Color.Black
+                    w.left.color = Color.Black
+                    self.right_rotate(w.parent)
+                    x = self.root
+                    
+        self.nil.left = self.nil.right = self.nil.parent = None
+        x.color = Color.Black 
+            
     def find(self, key, root):
         n = root
         while n != self.nil :
@@ -224,6 +287,14 @@ class RedBlackTree:
         while node.right != self.nil:
             node = node.right
         return node
+
+    def find_min(self, node):
+        if node == self.nil:
+            return self.nil
+        while node.left != self.nil:
+            node = node.left
+        return node
+    
     
     def print_all(self):
         node = self.find_max(self.root)
@@ -269,26 +340,54 @@ import random
 import sys
 
 bst = RedBlackTree()
-bst.insert(3)
-bst.insert(2)
-bst.insert(81)
-bst.insert(5)
-bst.insert(70)
-bst.print_tree()
-bst.insert(29)
+##
+##bst.insert(3846)
+##bst.insert(1090)
+##bst.insert(4679)
+####
+##bst.root.left.color = Color.Black
+##bst.root.right.color = Color.Black
+##bst.print_tree()
+##bst.delete(1090)
+##
+##
+####bst.insert(5)
+####bst.insert(70)
+##bst.print_tree()
+##bst.insert(29)
 
 
 #sys.exit(0)
 
 print ("ok")
-
+numbers = []
 for x in range(1000):
     key = random.randint(1,10000)
     if bst.find(key, bst.root) == bst.nil :
         bst.insert( key )
+        numbers.append(key)
         #bst.print_tree()
 
-print ("ok")
+
+print ("okaaaa", len(numbers))
+
+count = 0
+for x in range(10000):
+    if len(numbers) == 0:
+        break
+    if len(numbers) == 1:
+        key = 0
+    else:
+        key = random.randint(0,len(numbers)-1)
+    #if bst.find(numbers[key], bst.root) != bst.nil :
+        #print("\n############################# ", key)
+        #bst.print_tree()
+    bst.delete( numbers[key] )
+    numbers.pop(key)
+    count +=1
+    
+        
+print ("ok ",count)
 
 ##bst.check_ri(bst.root)
 ##
