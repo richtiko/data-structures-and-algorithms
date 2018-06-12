@@ -14,7 +14,7 @@ class AVL:
             
     def insert(self, key):
         node = AVL.Node()
-        node.key = key
+        node.key = key 
         parent = None
         n = self.root
         while n != None :
@@ -187,12 +187,22 @@ class AVL:
             return
         self.less_then(node.key, node.left)
         self.bigger_then(node.key, node.right)
-        if self.check_child_heights(node) == False:
+        if abs(self.get_height_deep(node.right) - self.get_height_deep(node.left)) >= 2 :
             raise RuntimeError("depths dont match")
+        if (node.left != None and node.left.parent != node) or (node.right != None and node.right.parent != node):
+            raise RuntimeError("parent error")
         self.check_ri(node.left)
         self.check_ri(node.right)
         
-        
+    def get_height_deep(self, node):
+        if node == None:
+            return -1
+        left_height = self.get_height_deep(node.left)
+        right_height = self.get_height_deep(node.right)
+        if abs(left_height - right_height ) >= 2 :
+            raise RuntimeError("depths dont match")
+        return max(left_height,right_height)+1
+
     def less_then(self, key, node):
         if node == None:
             return
@@ -254,38 +264,45 @@ import random
 import sys
 
 avl = AVL()
-avl.insert(3)
-
-avl.insert(2)
-
-
-avl.insert(6)
-avl.insert(5)
-
-avl.insert(10)
-avl.insert(11)
-avl.insert(12)
-avl.insert(7)
-avl.print_tree()
-avl.delete(2, avl.root)
-avl.print_all()
-
-print ("ok")
-
-for x in range(2000):
-    k = random.randint(1,200000)
-    if avl.find(k,avl.root) == None: #when inserting duplicate elements we can have same value to the left and the right of node  because of rotations if we rotate left 5->5->5 we will get 5<-5->5
-        avl.insert( k )
+##avl.insert(3)
+##avl.insert(2)
+##avl.insert(6)
+##avl.insert(5)
+##avl.insert(10)
+##avl.insert(11)
+##avl.insert(12)
+##avl.insert(7)
+##avl.print_tree()
+##avl.delete(2, avl.root)
 ##avl.print_all()
-##
-##avl.check_ri(bst.root)
-##
-##print ("okkkkkkkkkkkkkkk")
-##
-for x in range(2000):
-    key = random.randint(1,20000)
-    avl.delete(key, avl.root )
-##    
-##avl.check_ri(bst.root)
+
 print ("ok")
+
+numbers = []
+for x in range(500):
+    key = random.randint(1,10000)
+    if avl.find(key, avl.root) == None :
+        avl.insert( key )
+        numbers.append(key)
+
+
+print ("okaaaa", len(numbers))
+##
+count = 0
+for x in range(500):
+    if len(numbers) == 0:
+        break
+    if len(numbers) == 1:
+        key = 0
+    else:
+        key = random.randint(0,len(numbers)-1)
+    #if bst.find(numbers[key], bst.root) != bst.nil :
+        #print("\n############################# ", key)
+        #bst.print_tree()
+    avl.delete( numbers[key], avl.root)
+    numbers.pop(key)
+    count +=1
+
+print ("okaaaa", len(numbers))
+
 
