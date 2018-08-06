@@ -25,9 +25,12 @@ class HashSetBase:
     index = self.compute_hash(number)
     node = self.table[index]
     chain_length = 1
-    while node.next != None:
+    #to check for existing element we go to the end of the list, if no existing element were to be submitted we sould insert node to the beginning
+    while node.next != None and node.value != number:
       node = node.next
       chain_length += 1
+    if node.value == number:
+      return
     if node.value == None:
       node.value = number
     else:
@@ -53,11 +56,19 @@ class HashSetBase:
       node = node.next
     if node != None:
       if prev != None:# it is not the first node in the chain
+        #print("removing not head of list ",node.value)
+        prev.next = node.next
         del node
-        prev.next = None
       else:#first node in the chain
+        #print("removing head of list ",node.value)
         node.value = None
-        node.next = None
+        if node.next != None:
+          #print("removing head of list not only")
+          #copy next element to this slotand remove next node instead
+          to_delete = node.next
+          node.value = node.next.value
+          node.next = node.next.next
+          del to_delete
 
   def empty(self):
     for node in self.table:
