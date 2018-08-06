@@ -11,6 +11,7 @@ class HashSetBase:
 
     self.longest_chain = 0
     self.length = length
+    self.number_of_elements = 0
     self.table = []
     for i in range(0, self.length):
       self.table.append(HashSetBase.node())
@@ -20,8 +21,36 @@ class HashSetBase:
   
   def compute_hash(self, number):
     raise RuntimeError("not implemented")
+
+  def double_table(self):
+    self.length = self.get_double_length(self.length)
+    self.number_of_elements = 0
+    old_table = self.table
+    self.table = []
+    for i in range(0, self.length):
+      self.table.append(HashSetBase.node())
+    self.insert_old_table(old_table)
+
+  def shrink_table(self):
+    self.length = self.get_shrink_length(self.length)
+    self.number_of_elements = 0
+    old_table = self.table
+    self.table = []
+    for i in range(0, self.length):
+      self.table.append(HashSetBase.node())
+    self.insert_old_table(old_table)
+    
+  def insert_old_table(self, old_table):
+    for list_head in old_table:
+      node = list_head
+      while node != None and node.value != None:
+        self.insert(node.value)
+        node = node.next
+    
     
   def insert(self, number):
+    if self.number_of_elements + 1 > self.length:
+      self.double_table(); 
     index = self.compute_hash(number)
     node = self.table[index]
     chain_length = 1
@@ -38,7 +67,7 @@ class HashSetBase:
       chain_length += 1
     if chain_length > self.longest_chain:
       self.longest_chain = chain_length
-    
+    self.number_of_elements += 1
 
   def find(self, number):
     index = self.compute_hash(number)
@@ -48,6 +77,8 @@ class HashSetBase:
     return node != None
   
   def delete(self, number):
+    if self.number_of_elements - 1 < self.length/4:
+      self.shrink_table(); 
     index = self.compute_hash(number)
     node = self.table[index]
     prev = None
@@ -69,6 +100,8 @@ class HashSetBase:
           node.value = node.next.value
           node.next = node.next.next
           del to_delete
+      self.number_of_elements -= 1 
+    
 
   def empty(self):
     for node in self.table:
